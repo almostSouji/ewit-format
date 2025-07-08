@@ -23,6 +23,8 @@ const RESET = "\x1b[0m"; // called to return to standard terminal text color
 
 // ---------------
 
+const FORMAT = `${DARK_GRAY}{row} ${BRIGHT_GREEN}{server_name} ${LIGHT_GRAY}{timestamp_fmt} ${BRIGHT_MAGENTA}{username}${RESET}: {message}`;
+
 const fileArg = process.argv[2];
 
 const file = readFileSync(fileArg, "utf-8");
@@ -81,7 +83,7 @@ while ((match = regExp.exec(data)) !== null) {
 messages.sort((first, second) => first.timestamp_num - second.timestamp_num);
 
 for (const message of messages) {
-	let out = `${DARK_GRAY}{row} ${BRIGHT_GREEN}{server_name} ${LIGHT_GRAY}{timestamp_fmt} ${BRIGHT_MAGENTA}{username}${RESET}: {message}`;
+	let out = FORMAT;
 
 	out = out.replaceAll(/{(.+?)}/gi, (_pattern) => {
 		const pattern = _pattern.replaceAll("{", "").replaceAll("}", "");

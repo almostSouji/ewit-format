@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import re
 from datetime import datetime
 
@@ -28,13 +29,16 @@ RESET = "\033[0m"  # called to return to standard terminal text color
 
 FORMAT = f"{DARK_GRAY}{{row}} {BRIGHT_GREEN}{{server_name}} {LIGHT_GRAY}{{timestamp_fmt}} {BRIGHT_MAGENTA}{{username}}{RESET}: {{message}}"
 
-lines = open(0).readlines()
+file_name = sys.argv[1]
+
+lines = open(file_name, encoding="utf-8-sig").readlines()
 header, *lines = lines
 
 header = [
     x.strip().lstrip('"').rstrip('"').replace(" ", "_").lower()
     for x in header.split(",")
 ]
+
 n_attributes = len(header)
 attributes = [attribute.lower() for attribute in header]
 
