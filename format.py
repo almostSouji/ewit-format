@@ -65,10 +65,42 @@ def sortabletime(time: str):
     dt = datetime.fromisoformat(time)
     return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 
+patterns = {
+	"BTC": re.compile(r"(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}"),
+	"ETH": re.compile(r"0x[a-fA-F0-9]{40}"), # ETH etc. ERC-20
+	"DASH": re.compile(r"X[1–9A-HJ-NP-Za-km-z]{33}"),
+	"XMR": re.compile(r"[48][0–9AB][1–9A-HJ-NP-Za-km-z]{93}"),
+	"ADA": re.compile(r"addr1[a-z0–9]"),
+	"ATOM": re.compile(r"cosmos[a-zA-Z0–9_.-]{10,}"),
+	"DOGE": re.compile(r"\sD[a-zA-Z0–9_.-]{33}"),
+	"LTC": re.compile(r"[LM3][a-km-zA-HJ-NP-Z1–9]{26,33}"),
+	"NEM": re.compile(r"[N][A-Za-z0–9-]{37,52}"),
+	"NEO": re.compile(r"N[0–9a-zA-Z]{33}"),
+	"ONT": re.compile(r"A[0–9a-zA-Z]{33}"),
+	"DOT": re.compile(r"1[0–9a-zA-Z]{47}"),
+	"XRP": re.compile(r"r[0–9a-zA-Z]{33}"),
+	"XLM": re.compile(r"G[0–9A-Z]{40,60}"),
+}
 
+def find_wallets(text: str):
+    matches = dict()
+    for wallet_type, pattern in patterns.items():
+        for address in re.findall(pattern, text):
+            matches[address] = wallet_type
+
+    return matches
+
+wallets = dict()
+invites = set() 
 messages.sort(key=lambda x: sortabletime(x["timestamp"]))
 for message in messages:
     out = FORMAT
+
+    wallets.update(find_wallets(message.get("message", "")))
+
+    pattern = re.compile(r"t\.me\/\S*|\.gg\/\S*", flags=re.IGNORECASE)
+    for invite in re.findall(pattern, message.get("message", "")):
+        invites.add(invite)
 
     pattern = re.compile(r"{(.+?)}")
     for placeholder in re.findall(pattern, out):
@@ -76,3 +108,12 @@ for message in messages:
         out = out.replace(f"{{{placeholder}}}", str(value))
 
     print(out)
+
+print()
+print("# Found Invites:")
+print("\n".join([f"- {invite}" for invite in invites]))
+print()
+print("# Found potential wallets:")
+for address, wallet_type in wallets.items():
+    print(f"- [{wallet_type}] {address}")
+

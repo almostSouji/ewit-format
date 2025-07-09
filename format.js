@@ -82,8 +82,53 @@ while ((match = regExp.exec(data)) !== null) {
 
 messages.sort((first, second) => first.timestamp_num - second.timestamp_num);
 
+const invites = new Set();
+
+// https://gist.github.com/MBrassey/623f7b8d02766fa2d826bf9eca3fe005
+const patterns = {
+	BTC: /(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}/g,
+	ETH: /0x[a-fA-F0-9]{40}/g, // ETH etc. ERC-20
+	DASH: /X[1–9A-HJ-NP-Za-km-z]{33}/g,
+	XMR: /[48][0–9AB][1–9A-HJ-NP-Za-km-z]{93}/g,
+	ADA: /addr1[a-z0–9]/g,
+	ATOM: /cosmos[a-zA-Z0–9_.-]{10,}/g,
+	DOGE: /\sD[a-zA-Z0–9_.-]{33}/g,
+	LTC: /[LM3][a-km-zA-HJ-NP-Z1–9]{26,33}/g,
+	NEM: /[N][A-Za-z0–9-]{37,52}/g,
+	NEO: /N[0–9a-zA-Z]{33}/g,
+	ONT: /A[0–9a-zA-Z]{33}/g,
+	DOT: /1[0–9a-zA-Z]{47}/g,
+	XRP: /r[0–9a-zA-Z]{33}/g,
+	XLM: /G[0–9A-Z]{40,60}/g,
+};
+
+function findWallets(text) {
+	const matches = new Map();
+
+	for (const [walletType, pattern] of Object.entries(patterns)) {
+		let match;
+		while ((match = pattern.exec(text)) !== null) {
+			matches.set(match[0], walletType);
+		}
+	}
+
+	return matches;
+}
+
+const wallets = new Map();
 for (const message of messages) {
 	let out = FORMAT;
+
+	let match;
+	const pattern = /t\.me\/(\S*)|\.gg\/(\S*)/gi;
+	while ((match = pattern.exec(message?.message ?? "")) !== null) {
+		invites.add(match[0]);
+	}
+
+	const foundWallets = findWallets(message.message ?? "");
+	for (const [address, walletType] of foundWallets.entries()) {
+		wallets.set(address, walletType);
+	}
 
 	out = out.replaceAll(/{(.+?)}/gi, (_pattern) => {
 		const pattern = _pattern.replaceAll("{", "").replaceAll("}", "");
@@ -91,4 +136,13 @@ for (const message of messages) {
 	});
 
 	console.log(out);
+}
+
+console.log();
+console.log("# Found Invites:");
+console.log([...invites].map((invite) => `- ${invite}`).join("\n"));
+console.log();
+console.log("# Found potential wallets:");
+for (const [address, walletType] of wallets) {
+	console.log(`- [${walletType}] ${address}`);
 }

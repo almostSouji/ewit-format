@@ -1,6 +1,6 @@
 # About
 
-Format ewit csv output to be easier to read in sequence, like a chat.
+Format ewit csv output to be easier to read in sequence, like a chat while extracting useful information (invite links for telegram and discord, strings matching wallet addresses).
 
 At its core, this is a very simple, hacky, poc of a CSV formatter aligning with the export format of ewitness.
 
