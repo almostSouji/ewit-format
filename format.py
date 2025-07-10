@@ -110,10 +110,10 @@ for message in messages:
     print(out)
 
 print()
-print("# Found Invites:")
+print("# Found Invites:" if len(invites) else "# Found no invites")
 print("\n".join([f"- {invite}" for invite in invites]))
 print()
-print("# Found potential wallets:")
+print("# Found potential wallet addresses:" if len(wallets) else "# Found no potential wallet addresses")
 for address, wallet_type in wallets.items():
     print(f"- [{wallet_type}] {address}")
 

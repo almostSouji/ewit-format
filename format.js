@@ -139,10 +139,15 @@ for (const message of messages) {
 }
 
 console.log();
-console.log("# Found Invites:");
+console.log(invites.size ? "# Found invites:" : "# Found no invites");
 console.log([...invites].map((invite) => `- ${invite}`).join("\n"));
 console.log();
-console.log("# Found potential wallets:");
+console.log(
+	wallets.size
+		? "# Found potential wallet addresses:"
+		: "# Found no potential wallet addresses",
+);
+
 for (const [address, walletType] of wallets) {
 	console.log(`- [${walletType}] ${address}`);
 }
