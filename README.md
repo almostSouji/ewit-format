@@ -14,6 +14,7 @@ Additionally to the csv data, the script adds the following templates:
 
 - `{row}` represents the message number, starting with 1 as read from the csv data (minus the header line)
 - `{timestamp_fmt}` represents the timestamp (if available) in an easier to read format
+- `{format_short}` represents the first letter of the platform in upper case
 
 Messages are sorted by `"TIMESTAMP"` column ascending. So chats read from top to bottom
 

@@ -27,7 +27,7 @@ RESET = "\033[0m"  # called to return to standard terminal text color
 
 # ---------------
 
-FORMAT = f"{DARK_GRAY}{{row}} {BRIGHT_GREEN}{{server_name}} {LIGHT_GRAY}{{timestamp_fmt}} {BRIGHT_MAGENTA}{{username}}{RESET}: {{message}}"
+FORMAT = f"{DARK_GRAY}{{row}} [{{platform_short}}] {BRIGHT_GREEN}{{server_name}} {LIGHT_GRAY}{{timestamp_fmt}} {BRIGHT_MAGENTA}{{username}}{RESET}: {{message}}"
 
 file_name = sys.argv[1]
 
@@ -56,6 +56,9 @@ for num, entry in enumerate(re.findall(reg, "\n".join(lines))):
             message["timestamp_fmt"] = datetime.fromisoformat(value).strftime(
                 "%Y-%m-%d %H:%M"
             )
+
+        if name == "platform":
+            message["platform_short"] = value[0].upper()
         message[name] = value
 
     messages.append(message)

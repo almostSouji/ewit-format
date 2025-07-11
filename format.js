@@ -23,7 +23,7 @@ const RESET = "\x1b[0m"; // called to return to standard terminal text color
 
 // ---------------
 
-const FORMAT = `${DARK_GRAY}{row} ${BRIGHT_GREEN}{server_name} ${LIGHT_GRAY}{timestamp_fmt} ${BRIGHT_MAGENTA}{username}${RESET}: {message}`;
+const FORMAT = `${DARK_GRAY}{row} [{platform_short}] ${BRIGHT_GREEN}{server_name} ${LIGHT_GRAY}{timestamp_fmt} ${BRIGHT_MAGENTA}{username}${RESET}: {message}`;
 
 const fileArg = process.argv[2];
 
@@ -76,6 +76,7 @@ while ((match = regExp.exec(data)) !== null) {
 
 	message["timestamp_fmt"] = formattedTimestamp;
 	message["timestamp_num"] = date.getTime();
+	message["platform_short"] = message.platform?.at(0).toUpperCase();
 
 	messages.push(message);
 }
