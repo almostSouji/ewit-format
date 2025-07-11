@@ -105,7 +105,11 @@ for message in messages:
     pattern = re.compile(r"{(.+?)}")
     for placeholder in re.findall(pattern, out):
         value = message.get(placeholder, "-")
-        out = out.replace(f"{{{placeholder}}}", str(value))
+
+        if placeholder == "row":
+            out = out.replace(f"{{row}}", str(value).rjust(len(str(len(messages))), " "))
+        else:
+            out = out.replace(f"{{{placeholder}}}", str(value))
 
     print(out)
 

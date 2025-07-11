@@ -132,6 +132,13 @@ for (const message of messages) {
 
 	out = out.replaceAll(/{(.+?)}/gi, (_pattern) => {
 		const pattern = _pattern.replaceAll("{", "").replaceAll("}", "");
+		if (pattern === "row") {
+			return String(message["row"]).padStart(
+				String(messages.length).length,
+				" ",
+			);
+		}
+
 		return message[pattern] ?? "-";
 	});
 
