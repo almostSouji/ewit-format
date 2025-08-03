@@ -1,14 +1,30 @@
 # About
 
-Format ewit csv output to be easier to read in sequence, like a chat while extracting useful information (invite links for telegram and discord, strings matching wallet addresses).
+Format ewitness csv output to be easier to read in sequence, like a chat while extracting useful information (invite links for telegram and discord, strings matching wallet addresses).
 
 At its core, this is a very simple, hacky, poc of a CSV formatter aligning with the export format of ewitness.
 
-
 # Usage
 
+## Running the script
 
-Available template strings depend on the provided csv data, as determined by the header line. Names are used lowercase and with spaces replaced by `_`. For example, the key `SERVER NAME` is represented by the template `{server_name}`.
+```sh
+python ./format.py ./ewit-export.csv
+# or
+./format ./ewit-export.csv # with chmod +x ./format.py
+
+```
+
+> [!NOTE]
+> Messages are sorted by timestamp ascending, so they read like a regular chat conversation from top to bottom. If you want to stick to the original sorting, use the `--nosort` flag.
+
+## Custom format
+
+The script supports a `-f` or `--format` flag value to use a custom format string.
+
+Available templates depend on the provided CSV data, as determined by the header line. Names are used lowercase and with spaces replaced by `_`. For example, the key `SERVER NAME` is represented by the template `{server_name}`.
+
+### Additional template strings
 
 Additionally to the csv data, the script adds the following templates:
 
@@ -16,25 +32,46 @@ Additionally to the csv data, the script adds the following templates:
 - `{timestamp_fmt}` represents the timestamp (if available) in an easier to read format
 - `{format_short}` represents the first letter of the platform in upper case
 
-Messages are sorted by `"TIMESTAMP"` column ascending. So chats read from top to bottom
+### Styling
 
-## Python 
+The script exposes the following templates for styling. `{RESET}` can be used to end a styled section. As CSV data fields are always transformed to `lower_case`, colors are always used as `UPPER_CASE` templates. The following colors are available:
 
-```sh
-python ./format.py ./ewit-export.csv
-# or
-./format.py ./ewit-export.csv # with chmod +x ./format.py and shebang support
+- `{BLACK}`
+- `{RED}`
+- `{GREEN}`
+- `{YELLOW}`
+- `{BLUE}`
+- `{MAGENTA}`
+- `{CYAN}`
+- `{LIGHT_GRAY}`
+- `{DARK_GRAY}`
+- `{BRIGHT_RED}`
+- `{BRIGHT_GREEN}`
+- `{BRIGHT_YELLOW}`
+- `{BRIGHT_BLUE}`
+- `{BRIGHT_MAGENTA}`
+- `{BRIGHT_CYAN}`
+- `{WHITE}`
+- `{RESET}`
+
+## Default format
+
+If `-f` or `--format` are not supplied, the script uses the following formatting by default:
+
+```
+"{DARK_GRAY}{row} [{platform_short}] {BRIGHT_GREEN}{server_name} {LIGHT_GRAY}{timestamp_fmt} {BRIGHT_MAGENTA}{username}{RESET}: {message}"
 ```
 
-To determine the format, modify the `FORMAT` variable in `format.py`.
+## Experimental
 
-Due to python format string handling, braces have to be escaped, so the template `{server_name}` has to be used as `f"{{server_name}}"` in the template string.
+> [!TIP]
+> Output for experimental flags happens at the end and is printed to standard error (stderr) for easier filtering.
 
-## Node.js
+### `--invites`
 
-```sh
-node format.js ./ewit-export.csv
-```
+Try to extract telegram and discord invites from message content.
 
-To determine the format, modify the `FORMAT` constant in `format.js`.
+### `--wallets`
+
+Try to extract wallet addresses based on regular expressions.
 
