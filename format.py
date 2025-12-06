@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import sys
-import re
-from datetime import datetime
 import argparse
+import re
+import sys
+from datetime import datetime
 
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__
@@ -31,6 +31,12 @@ parser.add_argument(
 parser.add_argument(
     "--wallets",
     help="[EXPERIMENTAL] parse potential wallet addresses from message content",
+    action="store_true",
+    required=False,
+)
+parser.add_argument(
+    "--dedupe",
+    help="Dedupe messages based on content",
     action="store_true",
     required=False,
 )
@@ -140,13 +146,23 @@ invites = set()
 if not config.get("nosort"):
     messages.sort(key=lambda x: sortabletime(x["timestamp"]))
 
+seen = set()
 for message in messages:
     out = formatstring
 
-    wallets.update(find_wallets(message.get("message", "")))
+    content = message.get("message", "")
+    h = hash(content)
+
+    if config.get("dedupe"):
+        if h in seen:
+            continue
+        else:
+            seen.add(h)
+
+    wallets.update(find_wallets(content))
 
     pattern = re.compile(r"t\.me\/\S*|\.gg\/\S*", flags=re.IGNORECASE)
-    for invite in re.findall(pattern, message.get("message", "")):
+    for invite in re.findall(pattern, content):
         invites.add(invite)
 
     pattern = re.compile(r"{(.+?)}")
@@ -177,3 +193,21 @@ if config.get("wallets"):
     )
     for address, wallet_type in wallets.items():
         print(f"- [{wallet_type}] {address}", file=sys.stderr)
+
+if config.get("dedupe"):
+    print("\n\n")
+    print(colors.get("RED"), file=sys.stderr)
+    warnstring = (
+        "!!! Executed with --dedupe, potentially multiple authors per message !!!"
+    )
+    print(
+        "".join(
+            [
+                "!" * len(warnstring) + "\n",
+                warnstring + "\n",
+                "!" * len(warnstring) + "\n",
+                colors.get("RESET", ""),
+            ]
+        ),
+        file=sys.stderr,
+    )
