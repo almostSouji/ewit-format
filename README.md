@@ -74,4 +74,3 @@ Try to extract telegram and discord invites from message content.
 ### `--wallets`
 
 Try to extract wallet addresses based on regular expressions.
-

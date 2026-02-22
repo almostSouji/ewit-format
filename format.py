@@ -5,6 +5,9 @@ import re
 import sys
 from datetime import datetime
 
+if sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout = open(sys.stdout.fileno(), mode="w", encoding="utf-8", buffering=1)
+
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__
 )
@@ -37,6 +40,12 @@ parser.add_argument(
 parser.add_argument(
     "--dedupe",
     help="Dedupe messages based on content",
+    action="store_true",
+    required=False,
+)
+parser.add_argument(
+    "--no-color",
+    help="Remove colors (useful for exporting to file)",
     action="store_true",
     required=False,
 )
@@ -143,6 +152,8 @@ def find_wallets(text: str):
 wallets = dict()
 invites = set()
 
+no_color = config.get("no_color")
+
 if not config.get("nosort"):
     messages.sort(key=lambda x: sortabletime(x["timestamp"]))
 
@@ -167,7 +178,15 @@ for message in messages:
 
     pattern = re.compile(r"{(.+?)}")
     for placeholder in re.findall(pattern, out):
-        value = message.get(placeholder, None) or colors.get(placeholder, None) or "-"
+        field_value = message.get(placeholder, None)
+        color_replacer = colors.get(placeholder, None)
+
+        if field_value is not None:
+            value = field_value
+        elif color_replacer is not None:
+            value = "" if no_color else color_replacer
+        else:
+            value = "-"
 
         if placeholder == "row":
             out = out.replace("{row}", str(value).rjust(len(str(len(messages))), " "))
@@ -177,12 +196,14 @@ for message in messages:
     print(out)
 
 if config.get("invites"):
-    print(colors.get("RESET"), file=sys.stderr)
+    if not no_color:
+        print(colors.get("RESET"), file=sys.stderr)
     print("# Found Invites:" if len(invites) else "# Found no invites", file=sys.stderr)
     print("\n".join([f"- {invite}" for invite in invites]), file=sys.stderr)
 
 if config.get("wallets"):
-    print(colors.get("RESET"), file=sys.stderr)
+    if not no_color:
+        print(colors.get("RESET"), file=sys.stderr)
     print(
         (
             "# Found potential wallet addresses:"
@@ -196,7 +217,8 @@ if config.get("wallets"):
 
 if config.get("dedupe"):
     print("\n\n")
-    print(colors.get("RED"), file=sys.stderr)
+    if not no_color:
+        print(colors.get("RED"), file=sys.stderr)
     warnstring = (
         "!!! Executed with --dedupe, potentially multiple authors per message !!!"
     )
@@ -206,7 +228,7 @@ if config.get("dedupe"):
                 "!" * len(warnstring) + "\n",
                 warnstring + "\n",
                 "!" * len(warnstring) + "\n",
-                colors.get("RESET", ""),
+                "" if no_color else colors.get("RESET", ""),
             ]
         ),
         file=sys.stderr,
